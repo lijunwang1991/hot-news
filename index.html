@@ -3,61 +3,101 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#3b82f6">
-  <meta name="description" content="自动新闻收集应用 - 每日热点推送">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="新闻推送">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="apple-touch-icon" href="/icon-192x192.png">
-  <title>新闻推送</title>
+  <title>热点新闻</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* 内联样式确保主题色立即生效，避免闪烁 */
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-    }
-    html.light, html.light body {
-      background-color: #ffffff !important;
-      color: #000000;
-    }
-    html.dark, html.dark body {
-      background-color: #1a1a1a !important;
-      color: #ffffff;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; }
+    .header h1 { font-size: 24px; margin-bottom: 8px; }
+    .header p { opacity: 0.9; font-size: 14px; }
+    .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+    .news-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .news-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s; }
+    .news-tag { display: inline-block; background: #e74c3c; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-bottom: 8px; }
+    .news-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 8px; line-height: 1.4; }
+    .news-summary { color: #666; font-size: 14px; line-height: 1.6; margin-bottom: 12px; }
+    .news-meta { display: flex; justify-content: space-between; align-items: center; color: #999; font-size: 12px; }
+    .news-meta span { display: flex; align-items: center; gap: 4px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; }
+    .tab { padding: 10px 20px; background: white; border-radius: 20px; cursor: pointer; white-space: nowrap; font-size: 14px; }
+    .tab.active { background: #667eea; color: white; }
+    .install-btn { position: fixed; bottom: 20px; right: 20px; background: #667eea; color: white; padding: 12px 24px; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
   </style>
-  <script>
-    // 在 React 加载前立即设置主题，避免闪烁
-    (function() {
-      const isInIframe = window.self !== window.top;
-
-      function applyThemeToDOM(theme) {
-        document.documentElement.classList.remove('light', 'dark');
-        document.documentElement.classList.add(theme);
-        document.documentElement.setAttribute('data-theme', theme);
-      }
-
-      if (isInIframe) {
-        // 监听父窗口主动推送的主题消息
-        window.addEventListener('message', function(event) {
-          if (event.data && typeof event.data.theme === 'string') {
-            const theme = event.data.theme;
-            if (theme === 'light' || theme === 'dark') {
-              applyThemeToDOM(theme);
-            }
-          }
-        });
-      } else {
-        // 非 iframe 环境，使用默认 light 主题
-        applyThemeToDOM('light');
-      }
-    })();
-  </script>
 </head>
 <body>
-  <div id="root"></div>
+  <div class="header">
+    <h1><i class="fas fa-fire"></i> 热点新闻</h1>
+    <p>每日精选热门资讯</p>
+  </div>
+  
+  <div class="container">
+    <div class="tabs">
+      <div class="tab active" onclick="filterNews('all')">全部</div>
+      <div class="tab" onclick="filterNews('tech')">科技</div>
+      <div class="tab" onclick="filterNews('finance')">财经</div>
+      <div class="tab" onclick="filterNews('sports')">体育</div>
+      <div class="tab" onclick="filterNews('entertainment')">娱乐</div>
+    </div>
+    
+    <div id="news-list"></div>
+  </div>
+  
+  <div class="install-btn" onclick="installApp()">
+    <i class="fas fa-download"></i> 安装应用
+  </div>
+
+  <script>
+    const newsData = [
+      { id: 1, title: '全球科技峰会开幕，AI技术成焦点', summary: '来自世界各地的科技领袖齐聚一堂，探讨人工智能的未来发展方向和应用前景。', category: 'tech', source: '科技日报', time: '2小时前', views: '12.5万' },
+      { id: 2, title: '新能源汽车销量创新高', summary: '本月新能源汽车销量突破历史记录，市场渗透率持续提升，行业发展势头强劲。', category: 'finance', source: '财经网', time: '3小时前', views: '8.9万' },
+      { id: 3, title: '世界杯预选赛精彩回顾', summary: '昨晚的比赛充满悬念和惊喜，多支球队展现出强大的竞技实力。', category: 'sports', source: '体育报', time: '5小时前', views: '6.5万' },
+      { id: 4, title: '新款智能手机发布，功能惊艳', summary: '备受期待的旗舰手机终于亮相，搭载最新处理器和创新摄像技术。', category: 'tech', source: '数码世界', time: '6小时前', views: '15.6万' },
+      { id: 5, title: '股市今日大涨，投资者信心回升', summary: '受利好消息影响，今日股市全线飘红，科技股表现尤为亮眼。', category: 'finance', source: '财经网', time: '8小时前', views: '8.7万' },
+      { id: 6, title: '2024年最值得期待的10部电影', summary: '从科幻大片到文艺佳作，今年电影市场精彩纷呈，观众期待值拉满。', category: 'entertainment', source: '娱乐周刊', time: '10小时前', views: '7.8万' }
+    ];
+
+    function renderNews(news) {
+      const container = document.getElementById('news-list');
+      container.innerHTML = news.map(item => `
+        <div class="news-card">
+          <span class="news-tag">${getCategoryName(item.category)}</span>
+          <div class="news-title">${item.title}</div>
+          <div class="news-summary">${item.summary}</div>
+          <div class="news-meta">
+            <span><i class="fas fa-newspaper"></i> ${item.source}</span>
+            <span><i class="fas fa-clock"></i> ${item.time}</span>
+            <span><i class="fas fa-eye"></i> ${item.views}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function getCategoryName(cat) {
+      const names = { tech: '科技', finance: '财经', sports: '体育', entertainment: '娱乐' };
+      return names[cat] || '其他';
+    }
+
+    function filterNews(category) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      if (category === 'all') {
+        renderNews(newsData);
+      } else {
+        renderNews(newsData.filter(n => n.category === category));
+      }
+    }
+
+    function installApp() {
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        alert('应用已安装');
+        return;
+      }
+      alert('iPhone: 点击分享按钮 → 添加到主屏幕\n安卓: 点击菜单 → 添加到主屏幕');
+    }
+
+    renderNews(newsData);
+  </script>
 </body>
 </html>
