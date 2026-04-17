@@ -57,6 +57,20 @@ module.exports = (env, argv) => {
         template: './index.html',
         inject: 'body'
       })
-    ]
+    ],
+    devServer: {
+      port: 3266,
+      allowedHosts: 'all',
+      historyApiFallback: {
+        index: '/index.html',
+        rewrites: [
+          { from: /^\/_p\/\d+\//, to: '/index.html' }
+        ]
+      },
+      static: {
+        directory: path.join(__dirname, 'public'),
+        publicPath: '/'
+      }
+    }
   };
 };

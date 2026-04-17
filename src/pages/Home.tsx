@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Flame, Clock, TrendingUp, Newspaper } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { NewsItem } from '../types';
+import PWAInstall from '../components/PWAInstall';
 
 const mockHotNews: NewsItem[] = [
   {
@@ -88,6 +89,7 @@ const Home: React.FC = () => {
       className="min-h-screen bg-gray-50"
     >
       <div className="max-w-6xl mx-auto px-4 py-6">
+        <PWAInstall />
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
